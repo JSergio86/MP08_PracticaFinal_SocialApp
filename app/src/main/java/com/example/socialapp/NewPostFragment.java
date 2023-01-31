@@ -98,8 +98,7 @@ public class NewPostFragment extends Fragment {
         if (mediaTipo == null) {
             guardarEnFirestore(postContent, null);
         }
-        else
-        {
+        else {
             pujaIguardarEnFirestore(postContent);
         }
     }

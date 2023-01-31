@@ -72,6 +72,7 @@ public class HomeFragment extends Fragment {
         @Override
         protected void onBindViewHolder(@NonNull PostViewHolder holder, int position, @NonNull final Post post) {
             Glide.with(getContext()).load(post.authorPhotoUrl).circleCrop().into(holder.authorPhotoImageView);
+
             holder.authorTextView.setText(post.author);
             holder.contentTextView.setText(post.content);
             SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm - dd MMM");
