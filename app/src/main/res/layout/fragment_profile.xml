@@ -135,11 +135,7 @@
         android:orientation="vertical"
         android:gravity="center"
         android:layout_marginTop="30dp">
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/postsProfilesRecyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -159,7 +155,11 @@
                 android:layout_gravity="center_vertical"/>
 
         </LinearLayout>
-
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/postsProfilesRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

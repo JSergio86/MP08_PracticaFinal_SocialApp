@@ -36,6 +36,7 @@ public class ProfileFragment extends Fragment {
     TextView displayNameTextView, emailTextView, authorTextView;
     public AppViewModel appViewModel;
     String uid;
+    String nombre;
 
     public ProfileFragment() {}
 
@@ -68,7 +69,7 @@ public class ProfileFragment extends Fragment {
 
             String email = emailTextView.getText().toString();
             int indexArroba = email.indexOf("@");
-            String nombre = email.substring(0, indexArroba);
+            nombre = email.substring(0, indexArroba);
 
             displayNameTextView.setText(nombre);
         }
@@ -86,6 +87,10 @@ public class ProfileFragment extends Fragment {
 
         appViewModel = new ViewModelProvider(requireActivity()).get(AppViewModel.class);
 
+    }
+
+    public String getNombre() {
+        return nombre;
     }
 
     class PostsAdapter extends FirestoreRecyclerAdapter<Post, PostsAdapter.PostViewHolder> {
