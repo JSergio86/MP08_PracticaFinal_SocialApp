@@ -116,6 +116,7 @@ public class NewPostFragment extends Fragment {
                     public void onSuccess(DocumentReference documentReference) {
                         navController.popBackStack();
                         appViewModel.setMediaSeleccionado( null, null);
+                        documentReference.update("postId", documentReference.getId());
                     }
                 });
     }

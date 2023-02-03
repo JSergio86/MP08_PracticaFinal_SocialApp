@@ -73,7 +73,7 @@ public class HomeFragment extends Fragment {
         protected void onBindViewHolder(@NonNull PostViewHolder holder, int position, @NonNull final Post post) {
             if(post.author == null){
                 ProfileFragment profileFragment = new ProfileFragment();
-                holder.authorTextView.setText(profileFragment.getNombre());
+                holder.authorTextView.setText("Usuario");
             }
 
             else {

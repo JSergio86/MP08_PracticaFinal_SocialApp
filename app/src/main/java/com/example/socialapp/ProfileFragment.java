@@ -15,28 +15,44 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.Map;
 
 
 public class ProfileFragment extends Fragment {
 
     NavController navController;   // <-----------------
     ImageView photoImageView;
-    TextView displayNameTextView, emailTextView, authorTextView;
+    TextView displayNameTextView, emailTextView, authorTextView, likesTextView;
     public AppViewModel appViewModel;
     String uid;
     String nombre;
+    int count;
+    Query query;
 
     public ProfileFragment() {}
 
@@ -48,6 +64,9 @@ public class ProfileFragment extends Fragment {
         photoImageView = view.findViewById(R.id.photoImageView);
         displayNameTextView = view.findViewById(R.id.displayNameTextView);
         emailTextView = view.findViewById(R.id.emailTextView);
+        likesTextView = view.findViewById(R.id.likesTextView);
+
+
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -70,13 +89,13 @@ public class ProfileFragment extends Fragment {
             String email = emailTextView.getText().toString();
             int indexArroba = email.indexOf("@");
             nombre = email.substring(0, indexArroba);
-
             displayNameTextView.setText(nombre);
+            uid = user.getUid();
         }
 
         RecyclerView postsProfilesRecyclerView = view.findViewById(R.id.postsProfilesRecyclerView);
 
-        Query query = FirebaseFirestore.getInstance().collection("posts").whereEqualTo("uid",uid).limit(50).orderBy("date", Query.Direction.DESCENDING);
+        query = FirebaseFirestore.getInstance().collection("posts").whereEqualTo("uid",uid).limit(50).orderBy("date", Query.Direction.DESCENDING);
 
         FirestoreRecyclerOptions<Post> options = new FirestoreRecyclerOptions.Builder<Post>()
                 .setQuery(query, Post.class)
@@ -87,10 +106,21 @@ public class ProfileFragment extends Fragment {
 
         appViewModel = new ViewModelProvider(requireActivity()).get(AppViewModel.class);
 
-    }
+        query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                     count = 0;
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        Map<String, Boolean> likes = (Map<String, Boolean>) document.get("likes");
+                        count += likes.size();
+                    }
+                    likesTextView.setText(count+"");
 
-    public String getNombre() {
-        return nombre;
+                }
+            }
+        });
+
     }
 
     class PostsAdapter extends FirestoreRecyclerAdapter<Post, PostsAdapter.PostViewHolder> {
@@ -99,7 +129,7 @@ public class ProfileFragment extends Fragment {
         @NonNull
         @Override
         public PostViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new PostViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.viewholder_post, parent, false));
+            return new PostViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.viewholder_post_profile, parent, false));
         }
 
         @Override
@@ -112,18 +142,54 @@ public class ProfileFragment extends Fragment {
             String formattedDate = dateFormat.format(post.date);
             holder.timeTextView.setText(formattedDate);
 
+
             final String postKey = getSnapshots().getSnapshot(position).getId();
             final String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            if(post.likes.containsKey(uid))
+            if(post.likes.containsKey(uid)) {
                 holder.likeImageView.setImageResource(R.drawable.like_on);
-            else
+
+            }
+            else{
                 holder.likeImageView.setImageResource(R.drawable.like);
+            }
             holder.numLikesTextView.setText(String.valueOf(post.likes.size()));
             holder.likeImageView.setOnClickListener(view -> {
                 FirebaseFirestore.getInstance().collection("posts")
                         .document(postKey)
                         .update("likes."+uid, post.likes.containsKey(uid) ?
                                 FieldValue.delete() : true);
+                query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            count = 0;
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Map<String, Boolean> likes = (Map<String, Boolean>) document.get("likes");
+                                count += likes.size();
+                            }
+                            likesTextView.setText(count+"");
+
+                        }
+                    }
+                });
+
+            });
+
+            holder.deleteButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    FirebaseFirestore.getInstance().collection("posts").document(postKey)
+                            .delete()
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    // Mensaje de éxito
+                                    Toast.makeText(getContext(), "Post eliminado", Toast.LENGTH_SHORT).show();
+
+                                }
+                            });
+
+                }
             });
 
             // Miniatura de media
@@ -145,7 +211,7 @@ public class ProfileFragment extends Fragment {
         }
 
         class PostViewHolder extends RecyclerView.ViewHolder {
-            ImageView authorPhotoImageView, likeImageView, mediaImageView;
+            ImageView authorPhotoImageView, likeImageView, mediaImageView, deleteButton;
             TextView authorTextView, contentTextView, numLikesTextView, timeTextView;
 
             PostViewHolder(@NonNull View itemView) {
@@ -158,10 +224,12 @@ public class ProfileFragment extends Fragment {
                 numLikesTextView = itemView.findViewById(R.id.numLikesTextView);
                 mediaImageView = itemView.findViewById(R.id.mediaImage);
                 timeTextView = itemView.findViewById(R.id.timeTexView);
+                deleteButton = itemView.findViewById(R.id.deleteButton);
             }
 
         }
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

@@ -3,6 +3,8 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="../../../../layout/custom_preview.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/ic_baseline_delete_24.xml" value="0.1515" />
         <entry key="app/src/main/res/drawable/lapiz.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/like.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/like_on.xml" value="0.1" />
@@ -19,6 +21,7 @@
         <entry key="app/src/main/res/layout/fragment_sign_out.xml" value="0.18177083333333333" />
         <entry key="app/src/main/res/layout/nav_header_main.xml" value="0.33" />
         <entry key="app/src/main/res/layout/viewholder_post.xml" value="0.33" />
+        <entry key="app/src/main/res/layout/viewholder_post_profile.xml" value="0.47842401500938087" />
         <entry key="app/src/main/res/menu/activity_main_drawer.xml" value="0.35625" />
         <entry key="app/src/main/res/menu/main.xml" value="0.35625" />
         <entry key="app/src/main/res/xml/paths.xml" value="0.35520833333333335" />

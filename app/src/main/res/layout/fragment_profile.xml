@@ -93,6 +93,7 @@
                         android:textSize="17dp"
                         android:textColor="#000"/>
                     <TextView
+                        android:id="@+id/likesTextView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="500K+"
@@ -155,11 +156,6 @@
                 android:layout_gravity="center_vertical"/>
 
         </LinearLayout>
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/postsProfilesRecyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -168,5 +164,11 @@
             android:layout_marginLeft="25dp"/>
     </LinearLayout>
 
-
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/postsProfilesRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
 </LinearLayout>
+
+
