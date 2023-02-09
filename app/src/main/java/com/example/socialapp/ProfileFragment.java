@@ -32,6 +32,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -66,8 +67,6 @@ public class ProfileFragment extends Fragment {
         emailTextView = view.findViewById(R.id.emailTextView);
         likesTextView = view.findViewById(R.id.likesTextView);
 
-
-
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
         if(user != null){
@@ -82,7 +81,7 @@ public class ProfileFragment extends Fragment {
 
         if(user.getPhotoUrl() == null){
             Glide.with(requireView())
-                    .load(R.drawable.anonymous)
+                    .load(R.drawable.anonymo)
                     .transform(new CircleCrop())
                     .into(photoImageView);
 
@@ -106,14 +105,20 @@ public class ProfileFragment extends Fragment {
 
         appViewModel = new ViewModelProvider(requireActivity()).get(AppViewModel.class);
 
+
         query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {
                      count = 0;
                     for (QueryDocumentSnapshot document : task.getResult()) {
-                        Map<String, Boolean> likes = (Map<String, Boolean>) document.get("likes");
-                        count += likes.size();
+                        if(document.get("likes")==null){
+                            break;
+                        }
+                        else {
+                            Map<String, Boolean> likes = (Map<String, Boolean>) document.get("likes");
+                            count += likes.size();
+                        }
                     }
                     likesTextView.setText(count+"");
 
@@ -134,9 +139,18 @@ public class ProfileFragment extends Fragment {
 
         @Override
         protected void onBindViewHolder(@NonNull PostViewHolder holder, int position, @NonNull final Post post) {
-            Glide.with(getContext()).load(post.authorPhotoUrl).circleCrop().into(holder.authorPhotoImageView);
+            if(post.author == null){
+                holder.authorTextView.setText(nombre);
+                Glide.with(requireView())
+                        .load(R.drawable.anonymo)
+                        .transform(new CircleCrop())
+                        .into(holder.authorPhotoImageView);
+            }
+            else {
+                Glide.with(getContext()).load(post.authorPhotoUrl).circleCrop().into(holder.authorPhotoImageView);
+                holder.authorTextView.setText(post.author);
+            }
 
-            holder.authorTextView.setText(post.author);
             holder.contentTextView.setText(post.content);
             SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm - dd MMM");
             String formattedDate = dateFormat.format(post.date);
@@ -178,17 +192,28 @@ public class ProfileFragment extends Fragment {
             holder.deleteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    FirebaseFirestore.getInstance().collection("posts").document(postKey)
-                            .delete()
-                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
-                                    // Mensaje de éxito
-                                    Toast.makeText(getContext(), "Post eliminado", Toast.LENGTH_SHORT).show();
-
-                                }
-                            });
-
+                    // Obtener la referencia del post
+                    final DocumentReference postRef = FirebaseFirestore.getInstance().collection("posts").document(postKey);
+                    // Eliminar el post
+                    postRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            // Eliminar los likes asociados al post
+                            FirebaseFirestore.getInstance().collection("likes").whereEqualTo("postId", postKey)
+                                    .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                            if (task.isSuccessful()) {
+                                                for (QueryDocumentSnapshot like : task.getResult()) {
+                                                    like.getReference().delete();
+                                                }
+                                                // Mostrar mensaje de éxito
+                                                Toast.makeText(getContext(), "Post eliminado", Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    });
+                        }
+                    });
                 }
             });
 

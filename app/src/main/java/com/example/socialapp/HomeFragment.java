@@ -19,14 +19,18 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class HomeFragment extends Fragment {
@@ -72,8 +76,11 @@ public class HomeFragment extends Fragment {
         @Override
         protected void onBindViewHolder(@NonNull PostViewHolder holder, int position, @NonNull final Post post) {
             if(post.author == null){
-                ProfileFragment profileFragment = new ProfileFragment();
                 holder.authorTextView.setText("Usuario");
+                Glide.with(requireView())
+                        .load(R.drawable.anonymo)
+                        .transform(new CircleCrop())
+                        .into(holder.authorPhotoImageView);
             }
 
             else {
@@ -100,6 +107,19 @@ public class HomeFragment extends Fragment {
                                 FieldValue.delete() : true);
             });
 
+            holder.forwardImageView.setOnClickListener(view -> {
+                Map<String, Object> newPost = new HashMap<>();
+                newPost.put("content", post.content);
+                newPost.put("author", FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
+                newPost.put("authorPhotoUrl", FirebaseAuth.getInstance().getCurrentUser().getPhotoUrl().toString());
+                newPost.put("date", Timestamp.now());
+                newPost.put("originalPostId", postKey);
+                newPost.put("uid", uid);
+                newPost.put("forward", true);
+
+                FirebaseFirestore.getInstance().collection("posts").add(newPost);
+            });
+
             // Miniatura de media
             if (post.mediaUrl != null) {
                 holder.mediaImageView.setVisibility(View.VISIBLE);
@@ -120,7 +140,7 @@ public class HomeFragment extends Fragment {
         }
 
         class PostViewHolder extends RecyclerView.ViewHolder {
-            ImageView authorPhotoImageView, likeImageView, mediaImageView;
+            ImageView authorPhotoImageView, likeImageView, mediaImageView,forwardImageView;
             TextView authorTextView, contentTextView, numLikesTextView, timeTextView;
 
             PostViewHolder(@NonNull View itemView) {
@@ -133,6 +153,7 @@ public class HomeFragment extends Fragment {
                 numLikesTextView = itemView.findViewById(R.id.numLikesTextView);
                 mediaImageView = itemView.findViewById(R.id.mediaImage);
                 timeTextView = itemView.findViewById(R.id.timeTexView);
+                forwardImageView = itemView.findViewById(R.id.forwardImageView);
             }
 
         }
