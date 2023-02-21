@@ -67,7 +67,6 @@ public class SignInFragment extends Fragment {
         passwordEditText = view.findViewById(R.id.passwordEditText);
         emailSignInButton = view.findViewById(R.id.emailSignInButton);
         signInForm = view.findViewById(R.id.signInForm);
-        signInProgressBar = view.findViewById(R.id.signInProgressBar);
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -114,7 +113,7 @@ public class SignInFragment extends Fragment {
     }
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
         if(acct == null) return;
-        signInProgressBar.setVisibility(View.VISIBLE);
+//        signInProgressBar.setVisibility(View.VISIBLE);
         signInForm.setVisibility(View.GONE);
         mAuth.signInWithCredential(GoogleAuthProvider.getCredential(acct.getIdToken(
                 ), null))
@@ -144,7 +143,7 @@ public class SignInFragment extends Fragment {
 
     private void accederConEmail() {
         signInForm.setVisibility(View.GONE);
-        signInProgressBar.setVisibility(View.VISIBLE);
+        //signInProgressBar.setVisibility(View.VISIBLE);
 
         mAuth.signInWithEmailAndPassword(emailEditText.getText().toString(), passwordEditText.getText().toString())
                 .addOnCompleteListener(requireActivity(), new OnCompleteListener<AuthResult>() {
@@ -156,7 +155,7 @@ public class SignInFragment extends Fragment {
                             Snackbar.make(requireView(), "Error: " + task.getException(), Snackbar.LENGTH_LONG).show();
                         }
                         signInForm.setVisibility(View.VISIBLE);
-                        signInProgressBar.setVisibility(View.GONE);
+                       //signInProgressBar.setVisibility(View.GONE);
                     }
                 });
     }

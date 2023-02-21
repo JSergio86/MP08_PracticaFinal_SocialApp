@@ -144,7 +144,7 @@
             <ImageView
                 android:layout_width="45dp"
                 android:layout_height="45dp"
-                android:src="@drawable/email"/>
+                android:src="@drawable/email1"/>
             <TextView
                 android:id="@+id/emailTextView"
                 android:layout_width="wrap_content"

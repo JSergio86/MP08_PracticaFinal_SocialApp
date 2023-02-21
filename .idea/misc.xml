@@ -4,6 +4,7 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="../../../../layout/custom_preview.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/email.xml" value="0.2815" />
         <entry key="app/src/main/res/drawable/ic_baseline_delete_24.xml" value="0.1515" />
         <entry key="app/src/main/res/drawable/lapiz.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/like.xml" value="0.1" />
@@ -17,7 +18,7 @@
         <entry key="app/src/main/res/layout/fragment_new_post.xml" value="0.2" />
         <entry key="app/src/main/res/layout/fragment_profile.xml" value="0.22" />
         <entry key="app/src/main/res/layout/fragment_register.xml" value="0.35625" />
-        <entry key="app/src/main/res/layout/fragment_sign_in.xml" value="0.26811594202898553" />
+        <entry key="app/src/main/res/layout/fragment_sign_in.xml" value="0.18" />
         <entry key="app/src/main/res/layout/fragment_sign_out.xml" value="0.18177083333333333" />
         <entry key="app/src/main/res/layout/nav_header_main.xml" value="0.33" />
         <entry key="app/src/main/res/layout/viewholder_post.xml" value="0.33" />
