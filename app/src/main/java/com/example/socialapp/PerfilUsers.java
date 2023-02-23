@@ -1,7 +1,5 @@
 package com.example.socialapp;
 
-import static java.security.AccessController.getContext;
-
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -17,51 +15,105 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.firebase.Timestamp;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
 import java.util.Map;
 
-
-public class HomeFragment extends Fragment {
+public class PerfilUsers extends Fragment{
 
     NavController navController;   // <-----------------
+    ImageView photoImageView;
+    TextView displayNameTextView, authorTextView, likesTextView;
     public AppViewModel appViewModel;
+    String uid;
+    String nombre;
+    int count;
+    Query query;
+
+    public PerfilUsers() {}
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        navController = Navigation.findNavController(view);  // <-----------------
-
         appViewModel = new ViewModelProvider(requireActivity()).get(AppViewModel.class);
 
-        view.findViewById(R.id.gotoNewPostFragmentButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                navController.navigate(R.id.newPostFragment);
-            }
-        });
+        navController = Navigation.findNavController(view);  // <-----------------
+        photoImageView = view.findViewById(R.id.photoImageView);
+        displayNameTextView = view.findViewById(R.id.displayNameTextView);
+        likesTextView = view.findViewById(R.id.likesTextView);
 
-        RecyclerView postsRecyclerView = view.findViewById(R.id.postsRecyclerView);
+       appViewModel.postSeleccionado.observe(getViewLifecycleOwner(), post -> {
+           uid = post.uid;
 
-        Query query = FirebaseFirestore.getInstance().collection("posts").limit(50).orderBy("date", Query.Direction.DESCENDING);
+           if(post.authorPhotoUrl == null){
+               Glide.with(requireView())
+                       .load(R.drawable.anonymo)
+                       .transform(new CircleCrop())
+                       .into(photoImageView);
 
-        FirestoreRecyclerOptions<Post> options = new FirestoreRecyclerOptions.Builder<Post>()
-                .setQuery(query, Post.class)
-                .setLifecycleOwner(this)
-                .build();
+               displayNameTextView.setText("nombre");
+           }
+           else{
+               displayNameTextView.setText(post.author);
+               Glide.with(requireView())
+                       .load(post.authorPhotoUrl)
+                       .transform(new CircleCrop())
+                       .into(photoImageView);
+           }
 
-        postsRecyclerView.setAdapter(new PostsAdapter(options));
+           RecyclerView postsProfilesRecyclerView = view.findViewById(R.id.postsProfilesRecyclerView);
+
+           query = FirebaseFirestore.getInstance().collection("posts").whereEqualTo("uid",uid).limit(50).orderBy("date", Query.Direction.DESCENDING);
+
+           FirestoreRecyclerOptions<Post> options = new FirestoreRecyclerOptions.Builder<Post>()
+                   .setQuery(query, Post.class)
+                   .setLifecycleOwner(this)
+                   .build();
+
+           postsProfilesRecyclerView.setAdapter(new PerfilUsers.PostsAdapter(options));
+
+
+           query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+               @Override
+               public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                   if (task.isSuccessful()) {
+                       count = 0;
+                       for (QueryDocumentSnapshot document : task.getResult()) {
+                           if(document.get("likes")==null){
+                               break;
+                           }
+                           else {
+                               Map<String, Boolean> likes = (Map<String, Boolean>) document.get("likes");
+                               count += likes.size();
+                           }
+                       }
+                       likesTextView.setText(count+"");
+
+                   }
+               }
+           });
+
+       });
+
+
+
     }
 
     class PostsAdapter extends FirestoreRecyclerAdapter<Post, PostsAdapter.PostViewHolder> {
@@ -76,13 +128,12 @@ public class HomeFragment extends Fragment {
         @Override
         protected void onBindViewHolder(@NonNull PostViewHolder holder, int position, @NonNull final Post post) {
             if(post.author == null){
-                holder.authorTextView.setText("Usuario");
+                holder.authorTextView.setText(nombre);
                 Glide.with(requireView())
                         .load(R.drawable.anonymo)
                         .transform(new CircleCrop())
                         .into(holder.authorPhotoImageView);
             }
-
             else {
                 Glide.with(getContext()).load(post.authorPhotoUrl).circleCrop().into(holder.authorPhotoImageView);
                 holder.authorTextView.setText(post.author);
@@ -93,31 +144,37 @@ public class HomeFragment extends Fragment {
             String formattedDate = dateFormat.format(post.date);
             holder.timeTextView.setText(formattedDate);
 
+
             final String postKey = getSnapshots().getSnapshot(position).getId();
             final String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            if(post.likes.containsKey(uid))
+            if(post.likes.containsKey(uid)) {
                 holder.likeImageView.setImageResource(R.drawable.like_on);
-            else
+
+            }
+            else{
                 holder.likeImageView.setImageResource(R.drawable.like);
+            }
             holder.numLikesTextView.setText(String.valueOf(post.likes.size()));
             holder.likeImageView.setOnClickListener(view -> {
                 FirebaseFirestore.getInstance().collection("posts")
                         .document(postKey)
                         .update("likes."+uid, post.likes.containsKey(uid) ?
                                 FieldValue.delete() : true);
-            });
+                query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            count = 0;
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Map<String, Boolean> likes = (Map<String, Boolean>) document.get("likes");
+                                count += likes.size();
+                            }
+                            likesTextView.setText(count+"");
 
-            holder.forwardImageView.setOnClickListener(view -> {
-                Map<String, Object> newPost = new HashMap<>();
-                newPost.put("content", post.content);
-                newPost.put("author", FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
-                newPost.put("authorPhotoUrl", FirebaseAuth.getInstance().getCurrentUser().getPhotoUrl().toString());
-                newPost.put("date", Timestamp.now());
-                newPost.put("originalPostId", postKey);
-                newPost.put("uid", uid);
-                newPost.put("forward", true);
+                        }
+                    }
+                });
 
-                FirebaseFirestore.getInstance().collection("posts").add(newPost);
             });
 
             // Miniatura de media
@@ -136,20 +193,10 @@ public class HomeFragment extends Fragment {
                 holder.mediaImageView.setVisibility(View.GONE);
             }
 
-            holder.authorPhotoImageView.setOnClickListener(view -> {
-                if(post.uid.equals(FirebaseAuth.getInstance().getUid())){
-                    navController.navigate(R.id.profileFragment);
-                }
-                else{
-                    appViewModel.postSeleccionado.setValue(post);
-                    navController.navigate(R.id.perfilUsers);
-                }
-            });
-
         }
 
         class PostViewHolder extends RecyclerView.ViewHolder {
-            ImageView authorPhotoImageView, likeImageView, mediaImageView,forwardImageView;
+            ImageView authorPhotoImageView, likeImageView, mediaImageView, deleteButton;
             TextView authorTextView, contentTextView, numLikesTextView, timeTextView;
 
             PostViewHolder(@NonNull View itemView) {
@@ -162,16 +209,17 @@ public class HomeFragment extends Fragment {
                 numLikesTextView = itemView.findViewById(R.id.numLikesTextView);
                 mediaImageView = itemView.findViewById(R.id.mediaImage);
                 timeTextView = itemView.findViewById(R.id.timeTexView);
-                forwardImageView = itemView.findViewById(R.id.forwardImageView);
+                deleteButton = itemView.findViewById(R.id.deleteButton);
             }
 
         }
     }
 
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_home, container, false);
+        return inflater.inflate(R.layout.fragment_profile, container, false);
     }
 }

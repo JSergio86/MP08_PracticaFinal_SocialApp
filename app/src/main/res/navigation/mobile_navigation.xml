@@ -39,5 +39,10 @@
         android:name="com.example.socialapp.MediaFragment"
         android:label="fragment_media"
         tools:layout="@layout/fragment_media" />
+    <fragment
+        android:id="@+id/perfilUsers"
+        android:name="com.example.socialapp.PerfilUsers"
+        android:label="fragment_perfil_users"
+        tools:layout="@layout/fragment_perfil_users" />
 </navigation>
 
