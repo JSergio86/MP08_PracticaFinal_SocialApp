@@ -179,7 +179,9 @@ public class ProfileFragment extends Fragment {
                             count = 0;
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 Map<String, Boolean> likes = (Map<String, Boolean>) document.get("likes");
-                                count += likes.size();
+                                if (likes != null) {
+                                    count += likes.size();
+                                }
                             }
                             likesTextView.setText(count+"");
 

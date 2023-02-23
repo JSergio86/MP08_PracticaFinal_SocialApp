@@ -24,6 +24,7 @@ import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -37,6 +38,7 @@ public class HomeFragment extends Fragment {
 
     NavController navController;   // <-----------------
     public AppViewModel appViewModel;
+    FirebaseUser user;
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -62,6 +64,9 @@ public class HomeFragment extends Fragment {
                 .build();
 
         postsRecyclerView.setAdapter(new PostsAdapter(options));
+
+        user = FirebaseAuth.getInstance().getCurrentUser();
+
     }
 
     class PostsAdapter extends FirestoreRecyclerAdapter<Post, PostsAdapter.PostViewHolder> {
@@ -110,8 +115,16 @@ public class HomeFragment extends Fragment {
             holder.forwardImageView.setOnClickListener(view -> {
                 Map<String, Object> newPost = new HashMap<>();
                 newPost.put("content", post.content);
-                newPost.put("author", FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
-                newPost.put("authorPhotoUrl", FirebaseAuth.getInstance().getCurrentUser().getPhotoUrl().toString());
+                if(user.getPhotoUrl() == null){
+                    newPost.put("author", "prueba");
+                    newPost.put("authorPhotoUrl", "usuario");
+                }
+
+                else{
+                    newPost.put("author", FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
+                    newPost.put("authorPhotoUrl", FirebaseAuth.getInstance().getCurrentUser().getPhotoUrl().toString());
+                }
+
                 newPost.put("date", Timestamp.now());
                 newPost.put("originalPostId", postKey);
                 newPost.put("uid", uid);

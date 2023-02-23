@@ -5,8 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F6F5F5"
-    tools:context="ProfileFragment">
+    android:background="#F6F5F5">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -36,7 +35,7 @@
 
             <TextView
                 android:id="@+id/displayNameTextView"
-                android:layout_width="wrap_content"
+                android:layout_width="5dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="10dp"
@@ -129,25 +128,10 @@
         </androidx.cardview.widget.CardView>
     </RelativeLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:layout_marginTop="30dp">
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="20dp"
-            android:layout_marginLeft="25dp"/>
-    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/postsProfilesRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 </LinearLayout>

@@ -61,8 +61,9 @@ public class PerfilUsers extends Fragment{
 
        appViewModel.postSeleccionado.observe(getViewLifecycleOwner(), post -> {
            uid = post.uid;
+           FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-           if(post.authorPhotoUrl == null){
+           if(user.getPhotoUrl() == null){
                Glide.with(requireView())
                        .load(R.drawable.anonymo)
                        .transform(new CircleCrop())
