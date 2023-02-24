@@ -63,13 +63,13 @@ public class PerfilUsers extends Fragment{
            uid = post.uid;
            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-           if(user.getPhotoUrl() == null){
+           if(post.author == null){
                Glide.with(requireView())
                        .load(R.drawable.anonymo)
                        .transform(new CircleCrop())
                        .into(photoImageView);
 
-               displayNameTextView.setText("nombre");
+               displayNameTextView.setText("Usuario");
            }
            else{
                displayNameTextView.setText(post.author);
@@ -129,7 +129,7 @@ public class PerfilUsers extends Fragment{
         @Override
         protected void onBindViewHolder(@NonNull PostViewHolder holder, int position, @NonNull final Post post) {
             if(post.author == null){
-                holder.authorTextView.setText(nombre);
+                holder.authorTextView.setText("Usuario");
                 Glide.with(requireView())
                         .load(R.drawable.anonymo)
                         .transform(new CircleCrop())
@@ -221,6 +221,6 @@ public class PerfilUsers extends Fragment{
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_profile, container, false);
+        return inflater.inflate(R.layout.fragment_perfil_users, container, false);
     }
 }
